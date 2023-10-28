@@ -17,7 +17,6 @@ HEADERS = {
 }
 
 
-# Main function
 def main():
     parser = argparse.ArgumentParser(description="Fetch and update Notion page with Hugging Face papers.")
     parser.add_argument("--page-id", type=str, default="594e4ca3564c44a5aac4778fd06ba679", help="Notion page ID to update")

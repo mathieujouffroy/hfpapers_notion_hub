@@ -7,8 +7,8 @@ from datetime import datetime, timedelta
 def fetch_top_hf_papers(past_days: int) -> list:
     """ Fetches top Hugging Face papers from the past 'past_days' days. """
 
-    two_days_ago = datetime.today().date() - timedelta(days=past_days)
-    formatted_date = two_days_ago.strftime("%Y-%m-%d")
+    date_of_interest = datetime.today().date() - timedelta(days=past_days)
+    formatted_date = date_of_interest.strftime("%Y-%m-%d")
 
     URL = f"https://huggingface.co/papers?date={formatted_date}"
     response = requests.get(URL)
