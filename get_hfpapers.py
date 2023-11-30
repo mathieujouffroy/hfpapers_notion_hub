@@ -3,15 +3,19 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
-
 def fetch_top_hf_papers(past_days: int) -> list:
     """ Fetches top Hugging Face papers from the past 'past_days' days. """
 
     date_of_interest = datetime.today().date() - timedelta(days=past_days)
     formatted_date = date_of_interest.strftime("%Y-%m-%d")
+    print(f"Date of interest: {formatted_date}")
 
     URL = f"https://huggingface.co/papers?date={formatted_date}"
     response = requests.get(URL)
+    if response.status_code != 200:
+        print(f"Error: Unable to access URL for the date {formatted_date}. Status code: {response.status_code}")
+        return []
+    
     soup = BeautifulSoup(response.text, "html.parser")
     papers = []
 
@@ -19,7 +23,7 @@ def fetch_top_hf_papers(past_days: int) -> list:
     for item in main_section.find_all("article", {"class": "flex-col"}):
         upvote_text = item.find("div", {"class": "leading-none"}).text.strip()
         upvotes = int(upvote_text) if upvote_text != "-" else 0
-        if upvotes >= 8:
+        if upvotes > 15:
             title = item.find("h3").text.strip()
             url = "https://huggingface.co" + item.find("a", {"class": "cursor-pointer"})["href"]
 

@@ -25,7 +25,7 @@ def main():
 
     # retrieve page and display info
     page = get_page_by_id(HEADERS, args.page_id)
-    display_page_info(HEADERS, page)
+    #display_page_info(HEADERS, page)
     
     # fetch top papers from Hugging Face
     papers = fetch_paper_details(fetch_top_hf_papers(args.past_days))
