@@ -3,41 +3,69 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
-def fetch_top_hf_papers(past_days: int) -> list:
+def fetch_top_hf_papers(past_days: int, to_current: bool = False) -> list:
     """ Fetches top Hugging Face papers from the past 'past_days' days. """
 
-    date_of_interest = datetime.today().date() - timedelta(days=past_days)
-    formatted_date = date_of_interest.strftime("%Y-%m-%d")
-    print(f"Date of interest: {formatted_date}")
-
-    URL = f"https://huggingface.co/papers?date={formatted_date}"
-    response = requests.get(URL)
-    if response.status_code != 200:
-        print(f"Error: Unable to access URL for the date {formatted_date}. Status code: {response.status_code}")
-        return []
-    
-    soup = BeautifulSoup(response.text, "html.parser")
+    end_date = datetime.today().date()
+    date_of_interest = end_date - timedelta(days=past_days)
     papers = []
 
-    main_section = soup.find("body").find("main")
-    for item in main_section.find_all("article", {"class": "flex-col"}):
-        upvote_text = item.find("div", {"class": "leading-none"}).text.strip()
-        upvotes = int(upvote_text) if upvote_text != "-" else 0
-        if upvotes > 15:
-            title = item.find("h3").text.strip()
-            url = "https://huggingface.co" + item.find("a", {"class": "cursor-pointer"})["href"]
-
-            title = title
-            parts = title.split(':')
-            if len(parts) > 1:
-                paper_name = parts[0] + ":"
-                description = parts[1]
+    if to_current:
+        processed_titles = set()
+        while date_of_interest <= end_date:
+            formatted_date = date_of_interest.strftime("%Y-%m-%d")
+            print(f"Fetching papers for date: {formatted_date}")
+            url = f"https://huggingface.co/papers?date={formatted_date}"
+            response = requests.get(url)
+            if response.status_code != 200:
+                print(f"Error: Unable to access URL for the date {formatted_date}. Status code: {response.status_code}")
             else:
-                paper_name = ""
-                description = title 
-
-            pape_dict = {"name": paper_name, "title": description, "url": url, "upvotes": str(upvotes)}
-            papers.append(pape_dict)
+                soup = BeautifulSoup(response.text, "html.parser")
+                main_section = soup.find("body").find("main")
+                for item in main_section.find_all("article", {"class": "flex-col"}):
+                    title = item.find("h3").text.strip()
+                    print(f"Paper: {title}")
+                    if title not in processed_titles:
+                        upvote_text = item.find("div", {"class": "leading-none"}).text.strip()
+                        upvotes = int(upvote_text) if upvote_text != "-" else 0
+                        if upvotes > 20 or ("diffusion" in title.lower() and upvotes >= 15):
+                            parse_url = "https://huggingface.co" + item.find("a", {"class": "cursor-pointer"})["href"]
+                            title = item.find("h3").text.strip()
+                            parts = title.split(':')
+                            if len(parts) > 1:
+                                paper_name = parts[0] + ":"
+                                description = parts[1]
+                            else:
+                                paper_name = ""
+                                description = title 
+                            pape_dict = {"name": paper_name, "title": description, "url": parse_url, "upvotes": str(upvotes)}
+                            papers.append(pape_dict)
+                        processed_titles.add(title)
+            date_of_interest += timedelta(days=1)
+    else:
+        formatted_date = date_of_interest.strftime("%Y-%m-%d")
+        url = f"https://huggingface.co/papers?date={formatted_date}"
+        response = requests.get(url)
+        if response.status_code != 200:
+            print(f"Error: Unable to access URL for the date {formatted_date}. Status code: {response.status_code}")
+            return []
+        soup = BeautifulSoup(response.text, "html.parser")
+        main_section = soup.find("body").find("main")
+        for item in main_section.find_all("article", {"class": "flex-col"}):
+            title = item.find("h3").text.strip()
+            upvote_text = item.find("div", {"class": "leading-none"}).text.strip()
+            upvotes = int(upvote_text) if upvote_text != "-" else 0
+            if upvotes > 20 or ("diffusion" in title.lower() and upvotes >= 15):
+                parse_url = "https://huggingface.co" + item.find("a", {"class": "cursor-pointer"})["href"]
+                parts = title.split(':')
+                if len(parts) > 1:
+                    paper_name = parts[0] + ":"
+                    description = parts[1]
+                else:
+                    paper_name = ""
+                    description = title 
+                pape_dict = {"name": paper_name, "title": description, "url": parse_url, "upvotes": str(upvotes)}
+                papers.append(pape_dict)
 
     return papers
 

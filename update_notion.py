@@ -147,7 +147,7 @@ def add_content_to_page(
         ]
     })  
     response = requests.patch(url, headers=headers, data=payload)
-
+    #print(response.json()["results"])
     created_block_id = response.json()["results"][0]["id"]  
     parent_url = f"https://api.notion.com/v1/blocks/{created_block_id}/children"
     child_payload = json.dumps({
@@ -169,5 +169,5 @@ def add_content_to_page(
         ]
     })
     response = requests.patch(parent_url, headers=headers, data=child_payload)
-    print(response.json())
+    #print(response.json())
 

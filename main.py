@@ -21,6 +21,7 @@ def main():
     parser = argparse.ArgumentParser(description="Fetch and update Notion page with Hugging Face papers.")
     parser.add_argument("--page-id", type=str, default="594e4ca3564c44a5aac4778fd06ba679", help="Notion page ID to update")
     parser.add_argument("--past_days", type=int, default=2, help="Number of days in the past from the current date to retrieve papers from")
+    parser.add_argument("--to-current-date", action="store_true", default=False, help="Retrieve papers up to the current date")
     args = parser.parse_args()
 
     # retrieve page and display info
@@ -28,7 +29,7 @@ def main():
     #display_page_info(HEADERS, page)
     
     # fetch top papers from Hugging Face
-    papers = fetch_paper_details(fetch_top_hf_papers(args.past_days))
+    papers = fetch_paper_details(fetch_top_hf_papers(args.past_days, args.to_current_date))
 
     # add each paper to the Notion page
     for paper in papers:
