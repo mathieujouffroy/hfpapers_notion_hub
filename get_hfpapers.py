@@ -28,7 +28,7 @@ def fetch_top_hf_papers(past_days: int, to_current: bool = False) -> list:
                     if title not in processed_titles:
                         upvote_text = item.find("div", {"class": "leading-none"}).text.strip()
                         upvotes = int(upvote_text) if upvote_text != "-" else 0
-                        if upvotes > 20 or ("diffusion" in title.lower() and upvotes >= 15):
+                        if upvotes > 20 or ("diffusion" in title.lower() and upvotes >= 15) or ("3D" in title and upvotes >= 10):
                             parse_url = "https://huggingface.co" + item.find("a", {"class": "cursor-pointer"})["href"]
                             title = item.find("h3").text.strip()
                             parts = title.split(':')
